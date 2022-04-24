@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import Papa from 'papaparse';
 import {
   Steps,
   Row,
@@ -17,7 +18,7 @@ import {
   Checkbox,
 } from 'antd';
 import { ArtCard } from './../../components/ArtCard';
-import { UserSearch, UserValue } from './../../components/UserSearch';
+import { UserValue } from './../../components/UserSearch';
 import { Confetti } from './../../components/Confetti';
 import { mintNFT } from '../../actions';
 import {
@@ -942,6 +943,20 @@ const RoyaltiesStep = (props: {
   const [totalRoyaltyShares, setTotalRoyaltiesShare] = useState<number>(0);
   const [showCreatorsModal, setShowCreatorsModal] = useState<boolean>(false);
   const [isShowErrors, setIsShowErrors] = useState<boolean>(false);
+  const [csvFile, setCsvFile] = useState();
+
+  const readCreatorsFromCSV = () => {
+    Papa.parse(csvFile, {
+      header: false,
+      complete: function (results) {
+        const users = results.data[0];
+        //const royalties = results.data[1];
+        setCreators(users);
+      },
+      delimiter: ',',
+      dynamicTyping: true,
+    });
+  };
 
   useEffect(() => {
     if (publicKey) {
@@ -954,7 +969,7 @@ const RoyaltiesStep = (props: {
         },
       ]);
     }
-  }, [connected, setCreators]);
+  }, [connected, 3]);
 
   useEffect(() => {
     setRoyalties(
@@ -1047,7 +1062,7 @@ const RoyaltiesStep = (props: {
               lineHeight: 1,
             }}
           >
-            Add another creator
+            Add creators
           </span>
         </span>
         <MetaplexModal
@@ -1055,9 +1070,20 @@ const RoyaltiesStep = (props: {
           onCancel={() => setShowCreatorsModal(false)}
         >
           <label className="action-field" style={{ width: '100%' }}>
-            <span className="field-title">Creators</span>
-            <UserSearch setCreators={setCreators} />
+            <span className="field-title">Upload file</span>
           </label>
+          <input
+            type="file"
+            name="UploadFile"
+            accept=".csv"
+            id="csvFile"
+            onChange={e => {
+              setCsvFile(e.target.files[0]);
+            }}
+          />
+          <button onClick={readCreatorsFromCSV} className="btn btn-primary">
+            Upload
+          </button>
         </MetaplexModal>
       </Row>
       {isShowErrors && totalRoyaltyShares !== 100 && (
