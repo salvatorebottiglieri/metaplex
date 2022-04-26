@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import Papa from 'papaparse';
 import {
   Steps,
   Row,
@@ -17,7 +18,7 @@ import {
   Checkbox,
 } from 'antd';
 import { ArtCard } from './../../components/ArtCard';
-import { UserSearch, UserValue } from './../../components/UserSearch';
+import { UserValue } from './../../components/UserSearch';
 import { Confetti } from './../../components/Confetti';
 import { mintNFT } from '../../actions';
 import {
@@ -935,15 +936,42 @@ const RoyaltiesStep = (props: {
   confirm: () => void;
 }) => {
   // const file = props.attributes.image;
-  const { publicKey, connected } = useWallet();
+  const { publicKey } = useWallet();
   const [creators, setCreators] = useState<Array<UserValue>>([]);
-  const [fixedCreators, setFixedCreators] = useState<Array<UserValue>>([]);
+  const [fixedCreators] = useState<Array<UserValue>>([]);
   const [royalties, setRoyalties] = useState<Array<Royalty>>([]);
   const [totalRoyaltyShares, setTotalRoyaltiesShare] = useState<number>(0);
   const [showCreatorsModal, setShowCreatorsModal] = useState<boolean>(false);
   const [isShowErrors, setIsShowErrors] = useState<boolean>(false);
+  const [csvFile, setCsvFile] = useState<FileList | null>();
 
-  useEffect(() => {
+  const readCreatorsFromCSV = () => {
+    Papa.parse(csvFile?.item(0), {
+      header: false,
+      complete: function (results) {
+        const users = results.data;
+
+        setCreators(
+          [...users].map(creator => ({
+            key: creator[0],
+            label: shortenAddress(creator[0]),
+            value: creator[0],
+          })),
+        );
+
+        setRoyalties(
+          [...users].map(creator => ({
+            creatorKey: creator[0],
+            amount: creator[1],
+          })),
+        );
+      },
+      delimiter: ',',
+      dynamicTyping: true,
+    });
+  };
+
+  /*useEffect(() => {
     if (publicKey) {
       const key = publicKey.toBase58();
       setFixedCreators([
@@ -954,16 +982,16 @@ const RoyaltiesStep = (props: {
         },
       ]);
     }
-  }, [connected, setCreators]);
+  }, [connected, 3]);*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     setRoyalties(
       [...fixedCreators, ...creators].map(creator => ({
         creatorKey: creator.key,
         amount: Math.trunc(100 / [...fixedCreators, ...creators].length),
       })),
     );
-  }, [creators, fixedCreators]);
+  }, [creators, fixedCreators]);*/
 
   useEffect(() => {
     // When royalties changes, sum up all the amounts.
@@ -1047,7 +1075,7 @@ const RoyaltiesStep = (props: {
               lineHeight: 1,
             }}
           >
-            Add another creator
+            Add creators
           </span>
         </span>
         <MetaplexModal
@@ -1055,9 +1083,20 @@ const RoyaltiesStep = (props: {
           onCancel={() => setShowCreatorsModal(false)}
         >
           <label className="action-field" style={{ width: '100%' }}>
-            <span className="field-title">Creators</span>
-            <UserSearch setCreators={setCreators} />
+            <span className="field-title">Upload file</span>
           </label>
+          <input
+            type="file"
+            name="UploadFile"
+            accept=".csv"
+            id="csvFile"
+            onChange={e => {
+              setCsvFile(e.target.files);
+            }}
+          />
+          <button onClick={readCreatorsFromCSV} className="btn btn-primary">
+            Upload
+          </button>
         </MetaplexModal>
       </Row>
       {isShowErrors && totalRoyaltyShares !== 100 && (
