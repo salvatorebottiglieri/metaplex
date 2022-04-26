@@ -8,7 +8,7 @@ import {
   Col,
   Input,
   Statistic,
-  Slider,
+  //Slider,
   Spin,
   InputNumber,
   Form,
@@ -859,7 +859,7 @@ const InfoStep = (props: {
   );
 };
 
-const RoyaltiesSplitter = (props: {
+/*const RoyaltiesSplitter = (props: {
   creators: Array<UserValue>;
   royalties: Array<Royalty>;
   setRoyalties: Function;
@@ -928,7 +928,7 @@ const RoyaltiesSplitter = (props: {
       </Row>
     </Col>
   );
-};
+};*/
 
 const RoyaltiesStep = (props: {
   attributes: IMetadataExtension;
@@ -965,6 +965,8 @@ const RoyaltiesStep = (props: {
             amount: creator[1],
           })),
         );
+
+        setShowCreatorsModal(false);
       },
       delimiter: ',',
       dynamicTyping: true,
@@ -1036,17 +1038,13 @@ const RoyaltiesStep = (props: {
       {[...fixedCreators, ...creators].length > 0 && (
         <Row>
           <label className="action-field" style={{ width: '100%' }}>
-            <span className="field-title">Creators Split</span>
+            <span className="field-title">
+              Numero di creators: {[...fixedCreators, ...creators].length}
+            </span>
             <p>
               This is how much of the proceeds from the initial sale and any
               royalties will be split out amongst the creators.
             </p>
-            <RoyaltiesSplitter
-              creators={[...fixedCreators, ...creators]}
-              royalties={royalties}
-              setRoyalties={setRoyalties}
-              isShowErrors={isShowErrors}
-            />
           </label>
         </Row>
       )}
